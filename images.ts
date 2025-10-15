@@ -1,14 +1,23 @@
 // This file maps story keys to their corresponding image file paths.
-// By using direct string paths, we avoid issues with module bundlers and ensure
-// the application can run directly in the browser without a complex build setup.
+// By importing the images directly, we let Vite handle the bundling and path resolution,
+// ensuring the images are always found regardless of the server setup.
+
+import BanyuRoomMorning from './img/banyu_room_morning.jpg';
+import BanyuRoomStayInBed from './img/banyu_room_stay_in_bed.jpg';
+import PhoneScreen from './img/phone_screen.jpg';
+import KitchenMorning from './img/kitchen_morning.jpg';
+import RuangMakan from './img/ruang_makan.jpg';
+import Kampus from './img/kampus.jpg';
+import JembatanMalam from './img/jembatan_malam.jpg';
+import TerminalBus from './img/terminal_bus.jpg';
 
 export const images: { [key:string]: string } = {
-    'BANYU_ROOM_MORNING': './img/banyu_room_morning.jpg',
-    'BANYU_ROOM_STAY_IN_BED': './img/banyu_room_stay_in_bed.jpg',
-    'PHONE_SCREEN': './img/phone_screen.jpg',
-    'KITCHEN_MORNING': './img/kitchen_morning.jpg',
-    'RUANG_MAKAN': './img/ruang_makan.jpg',
-    'KAMPUS': './img/kampus.jpg',
-    'JEMBATAN_MALAM': './img/jembatan_malam.jpg',
-    'TERMINAL_BUS': './img/terminal_bus.jpg',
+    'BANYU_ROOM_MORNING': BanyuRoomMorning,
+    'BANYU_ROOM_STAY_IN_BED': BanyuRoomStayInBed,
+    'PHONE_SCREEN': PhoneScreen,
+    'KITCHEN_MORNING': KitchenMorning,
+    'RUANG_MAKAN': RuangMakan,
+    'KAMPUS': Kampus,
+    'JEMBATAN_MALAM': JembatanMalam,
+    'TERMINAL_BUS': TerminalBus,
 };
