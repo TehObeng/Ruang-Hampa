@@ -12,8 +12,10 @@ console.log('='.repeat(60));
 console.log('🎮 RUANG HAMPA - Depression Simulation Game');
 console.log('='.repeat(60));
 console.log('[Main] Starting application...');
-console.log(`[Main] Environment: ${import.meta.env.MODE}`);
-console.log(`[Main] Base URL: ${import.meta.env.BASE_URL}`);
+// Fix: Cast import.meta to any to access Vite env variables without TS errors.
+console.log(`[Main] Environment: ${(import.meta as any).env.MODE}`);
+// Fix: Cast import.meta to any to access Vite env variables without TS errors.
+console.log(`[Main] Base URL: ${(import.meta as any).env.BASE_URL}`);
 console.log(`[Main] Timestamp: ${new Date().toISOString()}`);
 console.log('='.repeat(60));
 

@@ -1,3 +1,4 @@
+
 :root {
   /* Primitive Color Tokens */
   --color-white: rgba(255, 255, 255, 1);
@@ -979,7 +980,6 @@ body {
   width: 100%;
   padding-bottom: 50%;
   position: relative;
-  margin-bottom: var(--space-32);
   background-color: var(--color-charcoal-800);
   border: 2px solid var(--divider-color);
   background-size: cover;
@@ -990,32 +990,22 @@ body {
   border-radius: var(--radius-base);
 }
 
-/* Game Content */
-#game-content {
-  padding: 0 var(--space-16);
-  max-height: calc(100vh - 400px);
-  overflow-y: auto;
-}
-
-/* Fieldsets */
-fieldset {
-  border: 2px solid var(--divider-color);
-  padding: var(--space-24);
-  margin: 0 0 var(--space-32) 0;
-  border-radius: var(--radius-base);
-}
-
-fieldset legend {
-  padding: 0 var(--space-8);
-  margin-left: var(--space-16);
-  font-size: 1.3rem;
-  color: var(--text-color);
+/* Game Header */
+#game-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  width: calc(100% - var(--space-32));
-  gap: var(--space-16);
-  flex-wrap: wrap;
+  align-items: center;
+  padding: var(--space-16);
+  border: 2px solid var(--divider-color);
+  border-top: none;
+  border-bottom-left-radius: var(--radius-base);
+  border-bottom-right-radius: var(--radius-base);
+  margin-bottom: var(--space-16);
+  margin-top: -4px; /* Align with bottom of image border */
+}
+
+#header-location {
+  font-size: 1.3rem;
   font-weight: var(--font-weight-medium);
 }
 
@@ -1048,6 +1038,40 @@ fieldset legend {
   outline-offset: 2px;
 }
 
+/* Panel System */
+#game-content {
+  overflow: hidden;
+  position: relative;
+}
+
+.panel-slider {
+  display: flex;
+  transition: transform 0.4s var(--ease-standard);
+}
+
+.panel {
+  flex: 0 0 100%;
+  min-width: 100%;
+}
+
+/* Fieldsets */
+fieldset {
+  border: 2px solid var(--divider-color);
+  padding: var(--space-24);
+  border-radius: var(--radius-base);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+fieldset legend {
+  padding: 0 var(--space-8);
+  margin-left: var(--space-16);
+  font-size: 1.3rem;
+  color: var(--text-color);
+  font-weight: var(--font-weight-medium);
+}
+
 /* Stats Container */
 #stats-container {
   display: flex;
@@ -1057,7 +1081,6 @@ fieldset legend {
   flex-wrap: wrap;
 }
 
-/* Character Icon (Pixel Art Face) */
 #character-icon {
   width: 52px;
   height: 52px;
@@ -1067,32 +1090,26 @@ fieldset legend {
   background: transparent;
   border-radius: var(--radius-sm);
 }
-
 #character-icon::before,
 #character-icon::after {
   content: '';
   position: absolute;
   background-color: var(--text-color);
 }
-
 #character-icon::before {
-  /* eyes */
   width: var(--space-6);
   height: var(--space-6);
   top: 14px;
   left: 9px;
   box-shadow: 20px 0 0 var(--text-color);
 }
-
 #character-icon::after {
-  /* mouth */
   width: 20px;
   height: var(--space-4);
   bottom: 12px;
   left: calc(50% - 10px);
 }
 
-/* Stats Bars */
 .stats-bars {
   display: flex;
   flex-direction: column;
@@ -1100,27 +1117,23 @@ fieldset legend {
   flex: 1;
   min-width: 200px;
 }
-
 .stat-bar {
   display: flex;
   align-items: center;
   gap: var(--space-16);
   flex-wrap: wrap;
 }
-
 .stat-label {
   font-size: 1.3rem;
   color: var(--text-color);
   min-width: 120px;
   font-weight: var(--font-weight-medium);
 }
-
 .bar {
   display: flex;
   gap: var(--space-4);
   flex-wrap: wrap;
 }
-
 .bar-block {
   width: var(--space-16);
   height: var(--space-16);
@@ -1128,7 +1141,6 @@ fieldset legend {
   transition: background-color 0.4s var(--ease-standard);
   border-radius: var(--space-2);
 }
-
 .bar-block.active {
   background-color: var(--stat-bar-full);
 }
@@ -1138,37 +1150,26 @@ fieldset legend {
   font-size: 1.3rem;
   line-height: var(--line-height-normal);
   text-align: left;
-  margin-bottom: var(--space-32);
-  min-height: 150px;
+  flex-grow: 1;
+  min-height: 200px;
 }
-
 .story-paragraph {
-  margin: 0 0 1em 0;
+  margin: 0;
   white-space: pre-wrap;
 }
 
-/* Divider */
-.divider {
-  border: none;
-  border-top: 2px dashed var(--divider-color);
-  margin: var(--space-32) 0;
-}
-
 /* Objects Container */
-#objects-wrapper {
-  margin-bottom: var(--space-32);
-}
-
 #objects-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: var(--space-12);
+  flex-grow: 1;
+  justify-content: center;
 }
-
 .object-button {
   font-family: var(--primary-font);
-  padding: var(--space-8) var(--space-16);
-  font-size: 1.1rem;
+  padding: var(--space-12) var(--space-16);
+  font-size: 1.2rem;
   background-color: transparent;
   color: var(--button-text-color);
   border: 2px dashed var(--button-bg);
@@ -1178,14 +1179,12 @@ fieldset legend {
   text-align: left;
   animation: fadeIn 0.5s ease forwards;
 }
-
 .object-button:hover {
   background-color: var(--button-bg);
   border-style: solid;
   border-color: var(--text-color);
   transform: translateY(-2px);
 }
-
 .object-button:focus-visible {
   outline: var(--focus-outline);
   outline-offset: 2px;
@@ -1197,6 +1196,8 @@ fieldset legend {
   flex-direction: column;
   gap: var(--space-12);
   counter-reset: choice-counter;
+  flex-grow: 1;
+  justify-content: center;
 }
 
 .choices-container button {
@@ -1216,7 +1217,6 @@ fieldset legend {
   animation: fadeIn 0.5s ease forwards;
   opacity: 0;
 }
-
 .choices-container button::before {
   counter-increment: choice-counter;
   content: counter(choice-counter) ".";
@@ -1226,24 +1226,20 @@ fieldset legend {
   transform: translateY(-50%);
   color: var(--text-color);
 }
-
 .choices-container button:hover {
   background-color: var(--button-hover-bg);
   border-color: var(--text-color);
   transform: translateY(-2px);
 }
-
 .choices-container button:focus-visible {
   outline: var(--focus-outline);
   outline-offset: 2px;
 }
-
 .choices-container button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
-
 .choices-container button:nth-child(1) { animation-delay: 0.1s; }
 .choices-container button:nth-child(2) { animation-delay: 0.2s; }
 .choices-container button:nth-child(3) { animation-delay: 0.3s; }
@@ -1252,6 +1248,59 @@ fieldset legend {
 @keyframes fadeIn {
   to { opacity: 1; }
 }
+
+/* Panel Navigation */
+.panel-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-16) 0;
+}
+
+.nav-arrow {
+  font-family: var(--primary-font);
+  background: none;
+  border: none;
+  color: var(--text-color);
+  font-size: 3rem;
+  cursor: pointer;
+  padding: 0 var(--space-16);
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  transition: all var(--duration-fast);
+}
+
+.nav-arrow:hover:not(:disabled) {
+  background-color: var(--button-bg);
+}
+
+.nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.nav-arrow:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.pagination-dots {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.dot {
+  width: var(--space-12);
+  height: var(--space-12);
+  background-color: var(--divider-color);
+  border-radius: 50%;
+  transition: background-color var(--duration-fast);
+}
+
+.dot.active {
+  background-color: var(--text-color);
+}
+
 
 /* Modal */
 .modal-overlay {
@@ -1534,14 +1583,18 @@ input[type="range"]:focus-visible {
     padding-bottom: 60%;
   }
 
+  #game-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-12);
+  }
+
   fieldset {
     padding: var(--space-16);
   }
-
+  
   fieldset legend {
     font-size: 1.1rem;
-    flex-direction: column;
-    align-items: flex-start;
   }
 
   #stats-container {
@@ -1555,6 +1608,7 @@ input[type="range"]:focus-visible {
 
   .story-container {
     font-size: 1.1rem;
+    min-height: 150px;
   }
 
   .choices-container button {
@@ -1598,16 +1652,14 @@ input[type="range"]:focus-visible {
 
   #header-image {
     padding-bottom: 70%;
-    margin-bottom: var(--space-16);
   }
 
-  #game-content {
-    padding: 0 var(--space-8);
+  #game-header {
+    padding: var(--space-12);
   }
 
   fieldset {
     padding: var(--space-12);
-    margin-bottom: var(--space-16);
   }
 
   fieldset legend {
@@ -1636,7 +1688,7 @@ input[type="range"]:focus-visible {
 
   .story-container {
     font-size: var(--font-size-base);
-    min-height: 100px;
+    min-height: 120px;
   }
 
   .choices-container button {
@@ -1703,7 +1755,8 @@ input[type="range"]:focus-visible {
   .main-menu-button,
   .choices-container,
   .object-button,
-  .modal-overlay {
+  .modal-overlay,
+  .panel-navigation {
     display: none !important;
   }
 }
