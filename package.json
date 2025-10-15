@@ -1,12 +1,13 @@
 {
   "name": "ruang-hampa",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.3.1",
