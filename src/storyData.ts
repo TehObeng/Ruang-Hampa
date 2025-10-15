@@ -3,7 +3,7 @@
 // All narrative content for the game
 // ===================================
 
-import type { StoryData } from './types';
+import type { StoryData } from './src/types';
 
 export const storyData: StoryData = {
   START: {

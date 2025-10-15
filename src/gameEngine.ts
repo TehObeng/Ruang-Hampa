@@ -3,7 +3,7 @@
 // Core game logic and state management
 // ===================================
 
-import type { GameState, StoryChoice, InteractableObject, Memento, LogbookEntry } from './types';
+import type { GameState, StoryChoice, InteractableObject, Memento, LogbookEntry } from './src/types';
 import { storyData } from './storyData';
 
 const STORAGE_KEY = 'ruang-hampa-save';

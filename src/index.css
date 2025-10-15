@@ -737,8 +737,6 @@ select.form-control {
     format('woff2');
 }
 
-/* END PERPLEXITY DESIGN SYSTEM */
-```css
 /* ===================================
    RUANG HAMPA - GLOBAL STYLES
    Responsive design for desktop & mobile
@@ -1709,4 +1707,3 @@ input[type="range"]:focus-visible {
     display: none !important;
   }
 }
-```

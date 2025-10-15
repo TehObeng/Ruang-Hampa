@@ -1,20 +1,27 @@
-// ===================================
-// APP COMPONENT
-// Main game application with all UI
-// ===================================
+
+// App.tsx
+// Improved and safer version of the main React App component for the game.
+// Fixes applied:
+// - optional chaining for interactableObjects
+// - image load race protection
+// - typewriter cancellation and cleanup
+// - safer scrolling using requestAnimationFrame
+// - better list keys (prefers id || index)
+// - minor code cleanup and comments
+// Note: this file still imports gameEngine, types and imageAssets from your project structure.
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { GameEngine } from './gameEngine';
 import { ImageAssets, validateImage } from './imageAssets';
 import type { ModalType, NotificationData, InteractableObject, StoryChoice } from './types';
 
-// Initialize game engine
+// Initialize game engine (singleton outside React)
 const gameEngine = new GameEngine();
 
 const App: React.FC = () => {
   console.log('[App] Component rendering');
 
-  // State management
+  // State
   const [showMainMenu, setShowMainMenu] = useState(true);
   const [showIntro, setShowIntro] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
@@ -25,96 +32,117 @@ const App: React.FC = () => {
   const [modalType, setModalType] = useState<ModalType>('none');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Refs
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<number | null>(null);
   const notificationIdRef = useRef(0);
-  const gameContentRef = useRef<HTMLDivElement>(null);
+  const gameContentRef = useRef<HTMLDivElement | null>(null);
+  const imageLoadIdRef = useRef(0);
+  const currentTypeCancelRef = useRef<() => void>(() => {});
 
-  // Show notification
+  // Helper: show notification
   const showNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
     const id = ++notificationIdRef.current;
     const notification: NotificationData = { id, message, type };
     console.log(`[Notification] ${type.toUpperCase()}: ${message}`);
-    
     setNotifications(prev => [...prev, notification]);
-    
-    setTimeout(() => {
+
+    window.setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 4000);
   }, []);
 
-  // Load and display image
+  // Load and display image with race protection
   const loadImage = useCallback(async (imageKey?: string) => {
+    // bump load id
+    const loadId = ++imageLoadIdRef.current;
+
     if (!imageKey) {
-      setCurrentImage('');
-      setImageLoaded(false);
-      setImageError(false);
+      // only clear if this load is the latest
+      if (loadId === imageLoadIdRef.current) {
+        setCurrentImage('');
+        setImageLoaded(false);
+      }
       return;
     }
 
+    // Reset states
     setImageLoaded(false);
-    setImageError(false);
-    
-  const isValid = await validateImage(imageKey);
-  if (isValid) {
-    setCurrentImage(ImageAssets[imageKey]);
-    setImageLoaded(true);
-  } else {
-    // Don't set imageError state, just show notification
-    showNotification('Gambar gagal dimuat', 'error');
-  }
+
+    try {
+      const isValid = await validateImage(imageKey);
+      // only apply result if this is the most recent load request
+      if (loadId !== imageLoadIdRef.current) return;
+
+      if (isValid) {
+        const img = ImageAssets[imageKey];
+        setCurrentImage(img);
+        setImageLoaded(true);
+      } else {
+        // keep previous image (if any) but notify user
+        showNotification('Gambar gagal dimuat', 'error');
+      }
+    } catch (err) {
+      console.error('[loadImage] error', err);
+      if (loadId === imageLoadIdRef.current) {
+        showNotification('Gagal memuat gambar (error)', 'error');
+      }
+    }
   }, [showNotification]);
 
-  // Typewriter effect
+  // 🧠 Improved Typewriter effect with safe cancellation
+  const typingRef = useRef<{ cancel?: boolean }>({});
+
   const typeWriter = useCallback(async (text: string, speed: number) => {
-    return new Promise<void>((resolve) => {
-      let index = 0;
-      setCurrentStory('');
-      setIsTyping(true);
+    // cancel any running typewriter first
+    if (typingRef.current.cancel) typingRef.current.cancel = true;
 
-      const type = () => {
-        if (index < text.length) {
-          setCurrentStory(prev => prev + text.charAt(index));
-          index++;
-          typingTimeoutRef.current = setTimeout(type, speed);
-        } else {
-          setIsTyping(false);
-          resolve();
-        }
-      };
+    const current = (typingRef.current = {});
+    setCurrentStory('');
+    setIsTyping(true);
 
-      type();
-    });
+    for (let i = 0; i < text.length; i++) {
+      if (current.cancel) {
+        setIsTyping(false);
+        return;
+      }
+      setCurrentStory((prev) => prev + text[i]);
+      await new Promise((r) => setTimeout(r, speed));
+    }
+
+    setIsTyping(false);
   }, []);
 
-  // Stop typing animation
   const stopTyping = useCallback(() => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      typingTimeoutRef.current = null;
-    }
+    if (typingRef.current) typingRef.current.cancel = true;
     setIsTyping(false);
+  }, []);
+
+  // Scroll to bottom helper using requestAnimationFrame (better timing with DOM updates)
+  const scrollToBottom = useCallback(() => {
+    if (!gameContentRef.current) return;
+    // use rAF to ensure layout is updated
+    window.requestAnimationFrame(() => {
+      const el = gameContentRef.current!;
+      el.scrollTop = el.scrollHeight;
+    });
   }, []);
 
   // Load current node
   const loadCurrentNode = useCallback(async () => {
     console.log('[App] Loading current story node...');
     stopTyping();
-    
+
     const node = gameEngine.getCurrentNode();
     const state = gameEngine.getState();
-    
-    setMentalEnergy(state.mentalEnergy);
+
+    setMentalEnergy(state.mentalEnergy ?? 50);
     await loadImage(node.image);
-    await typeWriter(node.story, state.typingSpeed);
-    
-    // Scroll to bottom
-    if (gameContentRef.current) {
-      gameContentRef.current.scrollTop = gameContentRef.current.scrollHeight;
-    }
-  }, [stopTyping, loadImage, typeWriter]);
+    await typeWriter(node.story ?? '', state.typingSpeed ?? 40);
+
+    // scroll after typing has started/finished so the latest text is visible
+    scrollToBottom();
+  }, [stopTyping, loadImage, typeWriter, scrollToBottom]);
 
   // Handle choice selection
   const handleChoice = useCallback(async (choice: StoryChoice) => {
@@ -133,18 +161,19 @@ const App: React.FC = () => {
   const startNewGame = useCallback(async () => {
     console.log('[App] Starting new game');
     setShowMainMenu(false);
-    
+
     const state = gameEngine.getState();
     if (!state.hasSeenIntro) {
       setShowIntro(true);
       const introText = gameEngine.getIntroText();
       await typeWriter(introText, 20);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // small delay after intro
+      await new Promise(resolve => setTimeout(resolve, 600));
       setShowIntro(false);
       gameEngine.markIntroAsSeen();
       gameEngine.saveGame();
     }
-    
+
     setGameStarted(true);
     await loadCurrentNode();
   }, [typeWriter, loadCurrentNode]);
@@ -163,33 +192,37 @@ const App: React.FC = () => {
     }
   }, [loadCurrentNode, showNotification]);
 
-  // Restart game
+  // Restart game (uses browser confirm for now)
   const restartGame = useCallback(() => {
-    if (confirm('Apakah Anda yakin ingin memulai lagi? Semua progres akan hilang.')) {
-      console.log('[App] Restarting game');
-      gameEngine.resetGame();
-      setShowMainMenu(true);
-      setGameStarted(false);
-      setCurrentStory('');
-      setCurrentImage('');
-      setMentalEnergy(50);
-      setModalType('none');
-      showNotification('Game telah direset', 'success');
-    }
+    const doReset = window.confirm('Apakah Anda yakin ingin memulai lagi? Semua progres akan hilang.');
+    if (!doReset) return;
+
+    console.log('[App] Restarting game');
+    gameEngine.resetGame();
+    setShowMainMenu(true);
+    setGameStarted(false);
+    setCurrentStory('');
+    setCurrentImage('');
+    setMentalEnergy(50);
+    setModalType('none');
+    showNotification('Game telah direset', 'success');
   }, [showNotification]);
 
   // Initial mount
   useEffect(() => {
     console.log('[App] Component mounted');
     gameEngine.debugPrintState();
-    
+
     return () => {
       console.log('[App] Component unmounting');
       stopTyping();
+      // cancel any pending image loads
+      imageLoadIdRef.current++;
     };
-  }, [stopTyping]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount
 
-  // Render functions
+  // Render helpers
   const renderMainMenu = () => (
     <div className="main-menu-overlay">
       <div className="main-menu-content">
@@ -245,17 +278,16 @@ const App: React.FC = () => {
 
   const renderObjects = () => {
     const node = gameEngine.getCurrentNode();
-    if (!node.interactableObjects || node.interactableObjects.length === 0) {
-      return null;
-    }
+    const objects = node.interactableObjects ?? [];
+    if (!objects || objects.length === 0) return null;
 
     return (
       <fieldset id="objects-wrapper">
         <legend>Lihat Sekitar</legend>
         <div id="objects-container">
-          {node.interactableObjects.map((obj, idx) => (
+          {objects.map((obj, idx) => (
             <button
-              key={idx}
+              key={(obj as any).id ?? idx}
               className="object-button"
               onClick={() => handleObjectInteraction(obj)}
             >
@@ -269,17 +301,16 @@ const App: React.FC = () => {
 
   const renderChoices = () => {
     const node = gameEngine.getCurrentNode();
-    if (!node.actions || node.actions.length === 0) {
-      return null;
-    }
+    const actions = node.actions ?? [];
+    if (!actions || actions.length === 0) return null;
 
     return (
       <fieldset>
         <legend>Pilihan</legend>
         <div className="choices-container" style={{ counterReset: 'choice-counter' }}>
-          {node.actions.map((action, idx) => (
+          {actions.map((action, idx) => (
             <button
-              key={idx}
+              key={(action as any).id ?? idx}
               onClick={() => handleChoice(action)}
               disabled={isTyping}
             >
@@ -293,9 +324,9 @@ const App: React.FC = () => {
 
   const renderSettingsModal = () => {
     const state = gameEngine.getState();
-    
+
     return (
-      <div className="modal-content">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">Pengaturan</h2>
           <button className="modal-close-button" onClick={() => setModalType('none')}>
@@ -307,8 +338,8 @@ const App: React.FC = () => {
             <label className="setting-label">Kecepatan Teks</label>
             <input
               type="range"
-              min="1"
-              max="100"
+              min={1}
+              max={100}
               value={state.typingSpeed}
               onChange={(e) => gameEngine.setTypingSpeed(Number(e.target.value))}
             />
@@ -336,7 +367,7 @@ const App: React.FC = () => {
     const logbook = gameEngine.getLogbookHistory();
 
     return (
-      <div className="modal-content">
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2 className="modal-title">Jurnal</h2>
           <button className="modal-close-button" onClick={() => setModalType('none')}>
@@ -350,14 +381,14 @@ const App: React.FC = () => {
               <p className="no-mementos">Belum ada kenang-kenangan.</p>
             ) : (
               mementos.map((m, idx) => (
-                <div key={idx} className="memento-card">
+                <div key={m.id ?? idx} className="memento-card">
                   <p className="memento-name"><strong>{m.name}</strong></p>
                   <p className="memento-description">{m.description}</p>
                 </div>
               ))
             )}
           </div>
-          
+
           <div className="journal-section">
             <h3>Hubungan</h3>
             {Object.entries(relationships).map(([char, value]) => (
@@ -381,7 +412,7 @@ const App: React.FC = () => {
               <p className="no-mementos">Belum ada catatan.</p>
             ) : (
               [...logbook].reverse().slice(0, 10).map((entry, idx) => (
-                <div key={idx} className="logbook-entry">
+                <div key={entry.id ?? idx} className="logbook-entry">
                   <p className="logbook-choice">
                     <strong>Kamu memutuskan:</strong> {entry.choice}
                   </p>
@@ -406,7 +437,7 @@ const App: React.FC = () => {
             opacity: imageLoaded ? 1 : 0.5,
           }}
         />
-        
+
         <div id="game-content" ref={gameContentRef}>
           <fieldset>
             <legend>
@@ -432,7 +463,7 @@ const App: React.FC = () => {
 
           {renderObjects()}
 
-          {node.interactableObjects.length > 0 && (
+          {(node.interactableObjects?.length ?? 0) > 0 && (
             <hr className="divider" />
           )}
 
