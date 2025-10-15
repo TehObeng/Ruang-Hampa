@@ -1,12 +1,8 @@
 
-import { GoogleGenAI } from "@google/genai";
 import "./index.css";
 import * as UI from "./ui";
 import { story } from "./story";
 import type { Memento, StoryChoice, InteractableObject, Relationships } from "./config";
-
-// --- Gemini API Initialization ---
-const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
 // Interfaces for state management
 interface Settings {
@@ -15,7 +11,6 @@ interface Settings {
 
 interface LogEntry {
     choice: string;
-    thought: string;
 }
 
 interface SavedState {
@@ -61,36 +56,10 @@ function removeData(key: string) {
 }
 
 /**
- * Generates an inner thought for the character using the Gemini API.
- * @param choiceText The text of the choice the player just made.
- * @returns A promise that resolves to the generated thought string.
- */
-async function generateInnerThought(choiceText: string): Promise<string> {
-    const previousStory = storyHistory[storyHistory.length - 1] || "Aku baru saja terbangun.";
-    const prompt = `You are the inner monologue of Banyu, a person struggling with depression in Indonesia.
-    Your current situation is: "${previousStory}"
-    You just decided to: "${choiceText}"
-    Your current mental energy is ${currentMentalEnergy} out of 100.
-    Based on this, provide a single, short, introspective sentence in Indonesian reflecting your inner thoughts. Keep it concise and in character.`;
-
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-        });
-        return response.text.trim();
-    } catch (error) {
-        console.error("Error generating inner thought:", error);
-        return "Pikiranku... kosong."; // Fallback thought
-    }
-}
-
-/**
  * Renders the UI based on a specific node from the static story data.
  * @param nodeId The ID of the story node to render.
- * @param thoughtToShow An optional inner thought to display from the previous action.
  */
-async function renderState(nodeId: string, thoughtToShow?: string) {
+async function renderState(nodeId: string) {
     const node = story[nodeId];
     if (!node) {
         console.error(`Story node with ID "${nodeId}" not found.`);
@@ -121,10 +90,6 @@ async function renderState(nodeId: string, thoughtToShow?: string) {
     
     await UI.updateStory(node.story, settings.typingSpeed);
     
-    if (thoughtToShow) {
-        UI.updateInnerThought(thoughtToShow);
-    }
-    
     UI.updateInteractableObjects(node.interactableObjects, handleObjectInteraction);
     UI.updateChoices(node.actions, handleChoice);
     
@@ -134,7 +99,7 @@ async function renderState(nodeId: string, thoughtToShow?: string) {
 }
 
 /**
- * Handles the player's choice by generating a thought and advancing to the next story node.
+ * Handles the player's choice by advancing to the next story node.
  * @param choice The choice object containing the next node ID.
  */
 async function handleChoice(choice: StoryChoice) {
@@ -172,11 +137,10 @@ async function handleChoice(choice: StoryChoice) {
         }
     }
 
-    const thought = await generateInnerThought(choice.text);
-    const logEntry = { choice: choice.text, thought };
+    const logEntry = { choice: choice.text };
     logbookHistory.push(logEntry);
 
-    await renderState(choice.nextNodeId, thought);
+    await renderState(choice.nextNodeId);
 }
 
 /**
@@ -449,7 +413,6 @@ function getJournalContent(): HTMLElement {
             entryDiv.className = 'logbook-entry';
             entryDiv.innerHTML = `
                 <p class="logbook-choice">Kamu memutuskan untuk: <strong>${entry.choice}</strong></p>
-                <p class="logbook-thought">${entry.thought}</p>
             `;
             logbookSection.appendChild(entryDiv);
         });
