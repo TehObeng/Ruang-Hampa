@@ -1,19 +1,10 @@
-import BANYU_ROOM_MORNING from '../img/banyu_room_morning.jpg';
-import BANYU_ROOM_STAY_IN_BED from '../img/banyu_room_stay_in_bed.jpg';
-import PHONE_SCREEN from '../img/phone_screen.jpg';
-import KITCHEN_MORNING from '../img/kitchen_morning.jpg';
-import RUANG_MAKAN from '../img/ruang_makan.jpg';
-import KAMPUS from '../img/kampus.jpg';
-import JEMBATAN_MALAM from '../img/jembatan_malam.jpg';
-import TERMINAL_BUS from '../img/terminal_bus.jpg';
-
 export const images: { [key: string]: string } = {
-    'BANYU_ROOM_MORNING': BANYU_ROOM_MORNING,
-    'BANYU_ROOM_STAY_IN_BED': BANYU_ROOM_STAY_IN_BED,
-    'PHONE_SCREEN': PHONE_SCREEN,
-    'KITCHEN_MORNING': KITCHEN_MORNING,
-    'RUANG_MAKAN': RUANG_MAKAN,
-    'KAMPUS': KAMPUS,
-    'JEMBATAN_MALAM': JEMBATAN_MALAM,
-    'TERMINAL_BUS': TERMINAL_BUS,
+    'BANYU_ROOM_MORNING': '/img/banyu_room_morning.jpg',
+    'BANYU_ROOM_STAY_IN_BED': '/img/banyu_room_stay_in_bed.jpg',
+    'PHONE_SCREEN': '/img/phone_screen.jpg',
+    'KITCHEN_MORNING': '/img/kitchen_morning.jpg',
+    'RUANG_MAKAN': '/img/ruang_makan.jpg',
+    'KAMPUS': '/img/kampus.jpg',
+    'JEMBATAN_MALAM': '/img/jembatan_malam.jpg',
+    'TERMINAL_BUS': '/img/terminal_bus.jpg',
 };
