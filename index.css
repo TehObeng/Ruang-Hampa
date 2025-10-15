@@ -11,10 +11,7 @@
   --stat-bar-full: #a0a0a0;
   --divider-color: #4d4d4d;
   --error-color: #e57373;
-
   --primary-font: 'VT323', monospace;
-  --story-font: 'VT323', monospace;
-  --thought-font: 'VT323', monospace;
 }
 
 /* Scrollbar Styling */
@@ -37,36 +34,48 @@ body {
   background-color: var(--background-color);
   color: var(--text-color);
   font-size: 20px;
-  -webkit-font-smoothing: none;
-  font-smooth: never;
 }
 
-#notification-container {
-    position: fixed;
-    top: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 300;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    pointer-events: none;
+@media (max-width: 650px) {
+  body, .main-menu-content, .app-container, .chapter-title, .chapter-subtitle, .story-container {
+    font-size: 16px;
+    padding: 0.5em;
+  }
+  .main-menu-title { font-size: 3rem; }
+  .main-menu-content { max-width: 95vw; }
+  .app-container, #root { max-width: 99vw; padding: 0.7em; }
 }
 
+.notification-container {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  pointer-events: none;
+}
 .notification {
-    background-color: var(--button-bg);
-    color: var(--text-color);
-    padding: 0.75rem 1.5rem;
-    border: 2px solid var(--divider-color);
-    font-size: 1rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    animation: slideInFadeOut 4s ease-in-out forwards;
+  background-color: var(--button-bg);
+  color: var(--text-color);
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--divider-color);
+  font-size: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  animation: slideInFadeOut 4s ease-in-out forwards;
 }
-
 .notification.error {
-    background-color: var(--error-color);
-    color: var(--background-color);
+  background-color: var(--error-color);
+  color: var(--background-color);
+}
+@keyframes slideInFadeOut {
+  0%   { transform: translateY(-20px); opacity: 0; }
+  15%  { transform: translateY(0); opacity: 1; }
+  85%  { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-20px); opacity: 0; }
 }
 
 @keyframes slideInFadeOut {
@@ -144,16 +153,25 @@ body {
     pointer-events: none;
 }
 
-.panel-hidden { display: none; }
+.panel-hidden { display: none !important; }
+.hidden { opacity: 0 !important; visibility: hidden !important; pointer-events: none; }
 
 .app-container {
   width: 100%;
+  max-width: 720px;
   box-sizing: border-box;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+@media (max-width: 500px) {
+  #chapter-title, #chapter-subtitle { font-size: 1.3rem; }
 }
 
 #header-image {
   width: 100%;
-  padding-bottom: 50%; /* 2:1 Aspect Ratio */
+  padding-bottom: 50%;
+  aspect-ratio: 21/9;
   position: relative;
   margin-bottom: 2rem;
   background-color: #1a1a1a;
@@ -161,8 +179,8 @@ body {
   background-size: cover;
   background-position: center;
   image-rendering: pixelated;
-  transition: background-image 0.5s ease-in-out, opacity 0.5s ease-in-out;
-  opacity: 0; /* Fades in via JS */
+  transition: background-image 0.5s ease-in-out, opacity 0.5s;
+  opacity: 0;
 }
 
 #game-content {
@@ -325,11 +343,12 @@ fieldset legend {
   background-color: var(--stat-bar-full);
 }
 
-.choices-container {
+.choices-container,
+.objects-container {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  counter-reset: choice-counter;
+  flex-wrap: wrap;
 }
 
 #objects-container {
@@ -403,8 +422,7 @@ fieldset legend {
   border: 4px solid var(--button-bg);
   border-top: 4px solid var(--text-color);
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 40px; height: 40px;
   animation: spin 1s linear infinite;
 }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

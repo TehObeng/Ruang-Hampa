@@ -82,7 +82,7 @@ export const story: StoryData = {
         location: "Dapur",
         image: 'KITCHEN_MORNING',
         actions: [
-            { text: "Setelah sarapan, apa yang harus kulakukan?", nextNodeId: "AFTER_BREAKFAST_CHOICE" },
+            { text: "Setelah sarapan, apa yang harus kulakukan?", nextNodeId: "AFTER_BREAKFAST_CHOICE" },,
         ],
         interactableObjects: [],
     },

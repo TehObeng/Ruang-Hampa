@@ -365,12 +365,26 @@ export function showNotification(message: string, type: 'success' | 'error' = 's
  * @param imageKey The key for the image in the `images` object.
  */
 export function updateHeaderImage(imageKey?: string) {
-    if (imageKey && images[imageKey]) {
-        headerImage.style.backgroundImage = `url('${images[imageKey]}')`;
-        headerImage.style.opacity = '1';
-    } else {
-        headerImage.style.opacity = '0';
-    }
+  const url = imageKey && images[imageKey] ? images[imageKey] : '';
+  const headerImage = document.getElementById('header-image') as HTMLDivElement;
+
+  if (url) {
+    // Try to load the image and report loading error
+    const img = new window.Image();
+    img.src = url;
+    img.onload = () => {
+      headerImage.style.backgroundImage = `url('${url}')`;
+      headerImage.style.opacity = '1';
+    };
+    img.onerror = () => {
+      headerImage.style.backgroundImage = 'none';
+      headerImage.style.opacity = '0.8';
+      showNotification('Gambar gagal dimuat.', 'error'); // Use the defined showNotification method
+    };
+  } else {
+    headerImage.style.backgroundImage = 'none';
+    headerImage.style.opacity = '0.5';
+  }
 }
 
 /**
