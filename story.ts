@@ -91,7 +91,7 @@ export const story: StoryData = {
         location: "Dapur",
         image: 'KITCHEN_MORNING',
         actions: [
-            { text: "Setelah sarapan, apa yang harus kulakukan?", nextNodeId: "AFTER_BREAKFAST_CHOICE" },
+            { text: "Setelah sarapan, apa yang harus kulakukan?", nextNodeId: "AFTER_BREAKFAS T_CHOICE" },
         ],
         interactableObjects: [],
     },
@@ -170,7 +170,6 @@ export const story: StoryData = {
         story: "Kamu menunduk, menatap piringmu. Bapak melanjutkan ceramahnya tentang tanggung jawab, tentang biaya kuliah, tentang kekecewaan mereka. Setiap kata terasa seperti beban yang semakin menekan pundakmu. Tidak ada yang membelamu.",
         location: "Ruang Makan",
         image: "RUANG_MAKAN",
-        // FIX: Moved relationshipChange from the node to the action below, as it's not a valid property on a StoryNode.
         actions: [
             { text: "Malam ini terasa sangat panjang.", nextNodeId: "POST_DINNER_DESPAIR", relationshipChange: { character: "Bapak", change: -10 } },
         ],
@@ -180,7 +179,6 @@ export const story: StoryData = {
         story: "'Kenapa semua orang selalu menyudutkanku?!' Kamu membanting sendok ke piring, suaranya memekakkan telinga. 'Kalian tidak pernah tahu rasanya jadi aku!' Kamu berdiri dan meninggalkan meja makan, bantingan pintu kamarmu menjadi penutup malam itu.",
         location: "Ruang Makan",
         image: "RUANG_MAKAN",
-        // FIX: Moved relationshipChange from the node to the action below to conform to the StoryNode type.
         actions: [
             { text: "Aku tidak tahan lagi di sini.", nextNodeId: "ALTERNATE_ENDING_PATH", relationshipChange: { character: "Ibu", change: -10 } },
         ],
@@ -201,7 +199,6 @@ export const story: StoryData = {
         location: "Ruang Makan",
         image: "RUANG_MAKAN",
         mentalEnergy: 75,
-        // FIX: Moved relationshipChange from the node to the action below. `relationshipChange` is not a property of StoryNode.
         actions: [
             { text: "Mungkin... ada harapan.", nextNodeId: "GOOD_ENDING", relationshipChange: { character: "Ibu", change: 20 } },
         ],
