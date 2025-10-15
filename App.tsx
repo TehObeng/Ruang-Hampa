@@ -25,7 +25,7 @@ const App: React.FC = () => {
   const [modalType, setModalType] = useState<ModalType>('none');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   // Refs
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -57,14 +57,14 @@ const App: React.FC = () => {
     setImageLoaded(false);
     setImageError(false);
     
-    const isValid = await validateImage(imageKey);
-    if (isValid) {
-      setCurrentImage(ImageAssets[imageKey]);
-      setImageLoaded(true);
-    } else {
-      setImageError(true);
-      showNotification('Gambar gagal dimuat', 'error');
-    }
+  const isValid = await validateImage(imageKey);
+  if (isValid) {
+    setCurrentImage(ImageAssets[imageKey]);
+    setImageLoaded(true);
+  } else {
+    // Don't set imageError state, just show notification
+    showNotification('Gambar gagal dimuat', 'error');
+  }
   }, [showNotification]);
 
   // Typewriter effect
