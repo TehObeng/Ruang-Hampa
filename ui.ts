@@ -1,4 +1,3 @@
-
 import type { StoryChoice, InteractableObject } from './config';
 import { images } from './images';
 
@@ -365,8 +364,15 @@ export function showNotification(message: string, type: 'success' | 'error' = 's
  * @param imageKey The key for the image in the `images` object.
  */
 export function updateHeaderImage(imageKey?: string) {
-  const url = imageKey && images[imageKey] ? images[imageKey] : '';
   const headerImage = document.getElementById('header-image') as HTMLDivElement;
+
+  if (!imageKey) {
+    headerImage.style.backgroundImage = 'none';
+    headerImage.style.opacity = '0.5';
+    return;
+  }
+  
+  const url = images[imageKey];
 
   if (url) {
     // Try to load the image and report loading error
@@ -377,15 +383,18 @@ export function updateHeaderImage(imageKey?: string) {
       headerImage.style.opacity = '1';
     };
     img.onerror = () => {
+      console.error(`Failed to load image at path: ${url}`);
       headerImage.style.backgroundImage = 'none';
       headerImage.style.opacity = '0.8';
-      showNotification('Gambar gagal dimuat.', 'error'); // Use the defined showNotification method
+      showNotification('Gambar gagal dimuat.', 'error');
     };
   } else {
+    console.warn(`Image key "${imageKey}" not found in images.ts. Image will not be displayed.`);
     headerImage.style.backgroundImage = 'none';
     headerImage.style.opacity = '0.5';
   }
 }
+
 
 /**
  * Creates and appends header buttons for settings and journal.
