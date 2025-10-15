@@ -1,7 +1,11 @@
-
 import { defineConfig } from 'vite';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // No special configuration needed after removing AI features.
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './'),
+    },
+  },
 });
