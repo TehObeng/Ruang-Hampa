@@ -160,6 +160,16 @@ async function handleChoice(choice: StoryChoice) {
         const { character, change } = choice.relationshipChange;
         const key = character.toLowerCase() as keyof Relationships;
         relationships[key] = Math.max(0, Math.min(100, relationships[key] + change));
+        
+        let message = '';
+        if (change > 0) {
+            message = `Hubunganmu dengan ${character} membaik.`;
+        } else if (change < 0) {
+            message = `Hubunganmu dengan ${character} memburuk.`;
+        }
+        if (message) {
+            UI.showNotification(message);
+        }
     }
 
     const thought = await generateInnerThought(choice.text);
@@ -181,17 +191,41 @@ function handleObjectInteraction(object: InteractableObject) {
  * Starts a new game by clearing old data and rendering the first scene.
  */
 async function startGame() {
-  const mainMenu = document.getElementById('main-menu');
-  const root = document.getElementById('root');
-  if (mainMenu) mainMenu.classList.add('hidden');
-  if (root) root.classList.remove('hidden');
+    const mainMenu = document.getElementById('main-menu');
+    const root = document.getElementById('root');
+    const introOverlay = document.getElementById('intro-overlay');
+    const introText = document.getElementById('intro-text');
 
-  resetGame();
-  UI.clearStory();
-  UI.clearInnerThought();
-  
-  await renderState('START');
+    if (!mainMenu || !root || !introOverlay || !introText) {
+        console.error("Core UI elements for starting the game are missing.");
+        return;
+    }
+
+    // Hide main menu
+    mainMenu.classList.add('hidden');
+
+    // Reset game state silently
+    resetGame();
+    UI.clearStory();
+    UI.clearInnerThought();
+
+    // Show and run intro sequence
+    const introContent = "Dalam keheningan pikiran, ada sebuah ruang. Ruang hampa.<br><br>Di sinilah ceritamu dimulai.";
+    introOverlay.classList.remove('hidden');
+
+    await UI.typeWriter(introText, introContent, 70);
+
+    // Short pause for dramatic effect
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    // Hide intro and show main game
+    introOverlay.classList.add('hidden');
+    root.classList.remove('hidden');
+
+    // Render the first scene
+    await renderState('START');
 }
+
 
 /**
  * Restores a saved game from LocalStorage.

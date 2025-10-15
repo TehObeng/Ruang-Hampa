@@ -10,7 +10,14 @@
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css" />
     <link rel="icon" href="data:,">
-  </head>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.24.0"
+  }
+}
+</script>
+</head>
   <body id="app-body">
     <div id="notification-container"></div>
     
@@ -51,6 +58,7 @@
             <h2 id="chapter-subtitle">Pagi yang Berat</h2>
           </div>
           <div id="story-container" aria-live="polite"></div>
+          <div id="inner-thought-container" class="panel-hidden"></div>
           
           <hr class="divider" />
           

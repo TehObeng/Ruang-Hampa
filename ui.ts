@@ -3,6 +3,7 @@ import type { StoryChoice, InteractableObject } from './config';
 import { images } from './images';
 
 const storyContainer = document.getElementById("story-container") as HTMLDivElement;
+const innerThoughtContainer = document.getElementById("inner-thought-container") as HTMLDivElement;
 const choicesContainer = document.getElementById("choices-container") as HTMLDivElement;
 const objectsWrapper = document.getElementById("objects-wrapper") as HTMLDivElement;
 const objectsContainer = document.getElementById("objects-container") as HTMLDivElement;
@@ -51,9 +52,9 @@ window.addEventListener('scroll', handleUserScroll, { passive: true });
 
 
 /**
- * Helper function for the interruptible typewriter effect.
+ * Helper function for the interruptible typewriter effect. Handles HTML tags.
  * @param element The HTML element to display the text in.
- * @param text The text to type out.
+ * @param text The text to type out, can include HTML.
  * @param speed The typing speed in milliseconds per character.
  */
 export function typeWriter(element: HTMLElement, text: string, speed: number): Promise<void> {
@@ -64,24 +65,43 @@ export function typeWriter(element: HTMLElement, text: string, speed: number): P
 
         const complete = () => {
             clearTimeout(typeWriterTimeout);
-            element.innerHTML = text;
+            element.innerHTML = text; // Use original text with HTML
             element.classList.remove('typing');
             storyContainer.removeEventListener('click', complete);
             onTypewriterFinish = null;
-            if (isAutoScrollingEnabled) {
+            if (isAutoScrollingEnabled && element.closest('#story-container')) {
                 window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
             }
             resolve();
         };
 
         onTypewriterFinish = complete;
-        storyContainer.addEventListener('click', complete, { once: true });
+        // Only allow skipping for text inside the main story container
+        if (element.closest('#story-container')) {
+            storyContainer.addEventListener('click', complete, { once: true });
+        }
 
         function type() {
             if (i < text.length) {
-                element.innerHTML += text.charAt(i);
-                i++;
-                if (isAutoScrollingEnabled) {
+                let char = text.charAt(i);
+                // Check for an HTML tag and output it all at once
+                if (char === '<') {
+                    const tagEndIndex = text.indexOf('>', i);
+                    if (tagEndIndex !== -1) {
+                        const tag = text.substring(i, tagEndIndex + 1);
+                        element.innerHTML += tag;
+                        i = tagEndIndex + 1; // Move index past the tag
+                    } else {
+                        // Malformed tag, treat as literal '<'
+                        element.innerHTML += char;
+                        i++;
+                    }
+                } else {
+                    element.innerHTML += char;
+                    i++;
+                }
+                
+                if (isAutoScrollingEnabled && element.closest('#story-container')) {
                     window.scrollTo(0, document.body.scrollHeight);
                 }
                 typeWriterTimeout = window.setTimeout(type, speed);
@@ -93,11 +113,30 @@ export function typeWriter(element: HTMLElement, text: string, speed: number): P
     });
 }
 
+
 /**
  * Clears the story container.
  */
 export function clearStory() {
     storyContainer.innerHTML = "";
+}
+
+/**
+ * Displays an inner thought.
+ * @param text The thought to display.
+ */
+export function updateInnerThought(text: string) {
+    if (!text) return;
+    innerThoughtContainer.innerHTML = `<p><em>Pikiran Banyu: ${text}</em></p>`;
+    innerThoughtContainer.classList.remove('panel-hidden');
+}
+
+/**
+ * Clears the inner thought container.
+ */
+export function clearInnerThought() {
+    innerThoughtContainer.innerHTML = '';
+    innerThoughtContainer.classList.add('panel-hidden');
 }
 
 /**
@@ -205,6 +244,9 @@ export function setLoading(isLoading: boolean) {
   loader.style.display = isLoading ? "block" : "none";
   choicesContainer.style.display = isLoading ? "none" : "flex";
   objectsContainer.style.display = isLoading ? "none" : "flex";
+  if (isLoading) {
+    clearInnerThought();
+  }
 }
 
 /**
