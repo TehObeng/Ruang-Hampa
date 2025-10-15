@@ -143,7 +143,7 @@ body {
     pointer-events: none;
 }
 
-.panel-hidden { display: none !important; }
+.panel-hidden { display: none; }
 
 .app-container {
   width: 100%;
@@ -202,6 +202,22 @@ body {
   display: inline-block;
   width: 1rem;
   margin-left: -1rem;
+}
+
+#inner-thought-container {
+    font-size: 1.2rem;
+    color: #a0a0a0;
+    padding: 1.25rem;
+    border: 2px dashed var(--divider-color);
+    margin: 2rem 0;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+#inner-thought-container:not(.panel-hidden) {
+    opacity: 1;
+}
+#inner-thought-container p {
+    margin: 0;
 }
 
 .divider {
@@ -314,6 +330,7 @@ fieldset legend {
   width: 16px;
   height: 16px;
   background-color: var(--stat-bar-empty);
+  transition: background-color 0.4s ease;
 }
 .bar-block.active {
   background-color: var(--stat-bar-full);
@@ -489,10 +506,29 @@ input[type="range"] {
     flex-shrink: 0;
 }
 
+.logbook-entry {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--divider-color);
+}
+.logbook-entry:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.logbook-choice {
+    margin: 0 0 0.5rem 0;
+}
+.logbook-thought {
+    margin: 0;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #bbb;
+    border-left: 2px solid var(--button-bg);
+}
+
 
 /* Hide unused complex components */
-.inner-thought-container, 
-#app-body::after,
 .sidebar,
 .main-panel,
 .action-panel,

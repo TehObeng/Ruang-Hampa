@@ -1,8 +1,12 @@
 
+import { GoogleGenAI } from "@google/genai";
 import "./index.css";
-import * as UI from "./src/ui";
-import { story } from "./src/story";
-import type { Memento, StoryChoice, InteractableObject, Relationships } from "./src/config";
+import * as UI from "./ui";
+import { story } from "./story";
+import type { Memento, StoryChoice, InteractableObject, Relationships } from "./config";
+
+// --- Gemini API Initialization ---
+const ai = new GoogleGenAI({apiKey: process.env.API_KEY});
 
 // Interfaces for state management
 interface Settings {
@@ -26,7 +30,7 @@ interface SavedState {
 
 
 // Game state variables
-let isGenerating = false; // Now used to prevent clicks while text is typing
+let isGenerating = false;
 let storyHistory: string[] = [];
 let logbookHistory: LogEntry[] = [];
 let mementos: Memento[] = [];
@@ -57,18 +61,43 @@ function removeData(key: string) {
 }
 
 /**
+ * Generates an inner thought for the character using the Gemini API.
+ * @param choiceText The text of the choice the player just made.
+ * @returns A promise that resolves to the generated thought string.
+ */
+async function generateInnerThought(choiceText: string): Promise<string> {
+    const previousStory = storyHistory[storyHistory.length - 1] || "Aku baru saja terbangun.";
+    const prompt = `You are the inner monologue of Banyu, a person struggling with depression in Indonesia.
+    Your current situation is: "${previousStory}"
+    You just decided to: "${choiceText}"
+    Your current mental energy is ${currentMentalEnergy} out of 100.
+    Based on this, provide a single, short, introspective sentence in Indonesian reflecting your inner thoughts. Keep it concise and in character.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+        });
+        return response.text.trim();
+    } catch (error) {
+        console.error("Error generating inner thought:", error);
+        return "Pikiranku... kosong."; // Fallback thought
+    }
+}
+
+/**
  * Renders the UI based on a specific node from the static story data.
  * @param nodeId The ID of the story node to render.
+ * @param thoughtToShow An optional inner thought to display from the previous action.
  */
-async function renderState(nodeId: string) {
+async function renderState(nodeId: string, thoughtToShow?: string) {
     const node = story[nodeId];
     if (!node) {
         console.error(`Story node with ID "${nodeId}" not found.`);
         return;
     }
     
-    isGenerating = true;
-    UI.setLoading(true);
+    // Note: isGenerating and setLoading(true) are handled in handleChoice
     UI.updateInteractableObjects([], () => {});
     UI.updateChoices([], () => {});
 
@@ -92,6 +121,10 @@ async function renderState(nodeId: string) {
     
     await UI.updateStory(node.story, settings.typingSpeed);
     
+    if (thoughtToShow) {
+        UI.updateInnerThought(thoughtToShow);
+    }
+    
     UI.updateInteractableObjects(node.interactableObjects, handleObjectInteraction);
     UI.updateChoices(node.actions, handleChoice);
     
@@ -101,13 +134,19 @@ async function renderState(nodeId: string) {
 }
 
 /**
- * Handles the player's choice by advancing to the next story node.
+ * Handles the player's choice by generating a thought and advancing to the next story node.
  * @param choice The choice object containing the next node ID.
  */
 async function handleChoice(choice: StoryChoice) {
     if (isGenerating) return;
 
+    isGenerating = true;
+    UI.setLoading(true);
+    UI.clearInnerThought();
+
     if (choice.nextNodeId === 'START') {
+        isGenerating = false;
+        UI.setLoading(false);
         startGame();
         return;
     }
@@ -123,10 +162,11 @@ async function handleChoice(choice: StoryChoice) {
         relationships[key] = Math.max(0, Math.min(100, relationships[key] + change));
     }
 
-    const logEntry = { choice: choice.text, thought: "" }; // Inner thought removed
+    const thought = await generateInnerThought(choice.text);
+    const logEntry = { choice: choice.text, thought };
     logbookHistory.push(logEntry);
 
-    await renderState(choice.nextNodeId);
+    await renderState(choice.nextNodeId, thought);
 }
 
 /**
@@ -148,6 +188,7 @@ async function startGame() {
 
   resetGame();
   UI.clearStory();
+  UI.clearInnerThought();
   
   await renderState('START');
 }
@@ -199,7 +240,7 @@ function saveGame() {
         currentMusic,
     };
     saveData(SAVE_KEY, currentState);
-    UI.showNotification("Progres disimpan.", 'success');
+    // UI.showNotification("Progres disimpan.", 'success'); // Commented out to reduce notification spam
 }
 
 /**
@@ -359,6 +400,27 @@ function getJournalContent(): HTMLElement {
     relationshipsSection.appendChild(createRelationshipBar('Bapak', relationships.bapak));
     relationshipsSection.appendChild(createRelationshipBar('Surya', relationships.surya));
     container.appendChild(relationshipsSection);
+
+    // Logbook Section
+    const logbookSection = document.createElement('div');
+    logbookSection.className = 'journal-section';
+    logbookSection.innerHTML = '<h3>Buku Catatan</h3>';
+
+    if (logbookHistory.length === 0) {
+        logbookSection.innerHTML += `<p class="no-mementos">Belum ada yang terjadi.</p>`;
+    } else {
+        const reversedHistory = [...logbookHistory].reverse();
+        reversedHistory.forEach(entry => {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'logbook-entry';
+            entryDiv.innerHTML = `
+                <p class="logbook-choice">Kamu memutuskan untuk: <strong>${entry.choice}</strong></p>
+                <p class="logbook-thought">${entry.thought}</p>
+            `;
+            logbookSection.appendChild(entryDiv);
+        });
+    }
+    container.appendChild(logbookSection);
 
     return container;
 }
